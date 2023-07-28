@@ -110,8 +110,8 @@ def main(args, configs):
                         *losses
                     )
 
-                    with open(os.path.join(train_log_path, "log.txt"), "a") as f:
-                        f.write(message1 + message2 + "\n")
+                    # with open(os.path.join(train_log_path, "log.txt"), "a") as f:
+                    #    f.write(message1 + message2 + "\n")
 
                     outer_bar.write(message1 + message2)
 
@@ -160,13 +160,15 @@ def main(args, configs):
                 if step % val_step == 0:
                     model.eval()
                     message = evaluate(model, step, configs, mel_stats, val_logger, vocoder, len(losses))
-                    with open(os.path.join(val_log_path, "log.txt"), "a") as f:
-                        f.write(message + "\n")
+                    # with open(os.path.join(val_log_path, "log.txt"), "a") as f:
+                    #    f.write(message + "\n")
                     outer_bar.write(message)
 
                     model.train()
 
                 if step % save_step == 0:
+                    msg = "-> Saving model at step {}".format(step)
+                    outer_bar.write(msg)
                     torch.save(
                         {
                             "model": model.module.state_dict(),
@@ -177,6 +179,7 @@ def main(args, configs):
                             "{}.pth.tar".format(step),
                         ),
                     )
+                    checkpoint_cleanup(train_config["path"]["ckpt_path"], step, save_step)
 
                 if step == total_step:
                     quit()
@@ -186,6 +189,13 @@ def main(args, configs):
             inner_bar.update(1)
         epoch += 1
 
+def checkpoint_cleanup(output_directory, step, save_step):
+    if step > 0:
+        last_checkpoint = step - (save_step * 2)
+        try:
+            os.remove(os.path.join(output_directory, "{}.pth.tar".format(last_checkpoint)))
+        except OSError:
+            pass
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
