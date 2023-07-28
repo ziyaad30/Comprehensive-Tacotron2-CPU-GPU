@@ -18,6 +18,7 @@ The validation logs up to 70K of synthesized mel and alignment are shown below (
 # Quickstart
 
 ## Dependencies
+### This particular repo worked on python 3.8
 You can install the Python dependencies with
 ```
 pip3 install -r requirements.txt
