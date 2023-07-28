@@ -129,8 +129,9 @@ def main(args, configs):
                     )
                     log(
                         train_logger,
+                        step=step,
                         fig=fig,
-                        tag="Training/step_{}_{}".format(step, tag),
+                        tag="Training/audio",
                     )
                     log(
                         train_logger,
@@ -143,15 +144,17 @@ def main(args, configs):
                     ]
                     log(
                         train_logger,
+                        step=step,
                         audio=wav_reconstruction,
                         sampling_rate=sampling_rate,
-                        tag="Training/step_{}_{}_reconstructed".format(step, tag),
+                        tag="Training/reconstructed",
                     )
                     log(
                         train_logger,
+                        step=step,
                         audio=wav_prediction,
                         sampling_rate=sampling_rate,
-                        tag="Training/step_{}_{}_synthesized".format(step, tag),
+                        tag="Training/synthesized",
                     )
 
                 if step % val_step == 0:
