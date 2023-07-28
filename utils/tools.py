@@ -110,7 +110,10 @@ def log(
 
 def get_mask_from_lengths(lengths, max_len=-1):
     max_len = max(torch.max(lengths).item(), max_len)
-    ids = torch.arange(0, max_len, out=torch.cuda.LongTensor(max_len))
+    if torch.cuda.is_available():
+        ids = torch.arange(0, max_len).long().cuda()
+    else:
+        ids = torch.arange(0, max_len).long().cpu()
     mask = (ids < lengths.unsqueeze(1))
     return mask
 
