@@ -8,11 +8,23 @@ import numpy as np
 from tqdm import tqdm
 
 import audio as Audio
-from text import text_to_sequence
+from text import phon_to_sequence
 from utils.tools import save_mel_and_audio
+
+# load phonemizer
+from phonemizer.backend import EspeakBackend
+if os.name == 'nt':
+    from phonemizer.backend.espeak.wrapper import EspeakWrapper
+    _ESPEAK_LIBRARY = 'C:\Program Files\eSpeak NG\libespeak-ng.dll'    # For Windows
+    EspeakWrapper.set_library(_ESPEAK_LIBRARY)
 
 random.seed(1234)
 
+
+def phoneme_text(text):
+    backend = EspeakBackend(language='en-us', preserve_punctuation=True, with_stress=False, punctuation_marks=';:,.!?¡¿—…"«»“”()', language_switch='remove-flags')
+    text = backend.phonemize([text], strip=True)[0]
+    return text.strip()
 
 class Preprocessor:
     def __init__(self, config):
@@ -71,7 +83,9 @@ class Preprocessor:
                 parts = line.strip().split("|")
                 basename = parts[0]
                 text = parts[2]
-
+                
+                text = phoneme_text(text)
+                
                 wav_path = os.path.join(self.in_dir, "wavs", "{}.wav".format(basename))
 
                 ret = self.process_utterance(text, wav_path, self.dataset, basename)
@@ -152,7 +166,7 @@ class Preprocessor:
     def process_utterance(self, raw_text, wav_path, speaker, basename):
 
         # Preprocess text
-        text = np.array(text_to_sequence(raw_text, self.cleaners))
+        text = np.array(phon_to_sequence(raw_text, self.cleaners))
 
         # Load and process wav files
         wav_raw, wav = self.load_audio(wav_path)
