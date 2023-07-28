@@ -1,10 +1,6 @@
-g2p-en==2.1.0
 inflect==4.1.0
-librosa==0.7.2
+librosa==0.8.1
 matplotlib==3.4.2
-# numba==0.48
-# numpy==1.19.0
-# pypinyin==0.39.0
 pyworld==0.3.0
 PyYAML==5.4.1
 scikit-learn==0.23.2
