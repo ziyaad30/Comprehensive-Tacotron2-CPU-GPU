@@ -104,6 +104,7 @@ def log(
         logger.add_audio(
             tag,
             audio / max(abs(audio)),
+            global_step=step,
             sample_rate=sampling_rate,
         )
 
@@ -195,6 +196,9 @@ def infer_one_sample(targets, predictions, vocoder, mel_stats, model_config, pre
         mel_predictions = Audio.tools.mel_denormalize(predictions[1], *mel_stats)
 
     basename = targets[0][0]
+    
+    basename = re.sub('[^A-Za-z0-9]+', '', basename)
+    
     src_len = targets[4][0].item()
     mel_len = mel_predictions[0].shape[0]
     reduced_mel_len = mel_len // n_frames_per_step
