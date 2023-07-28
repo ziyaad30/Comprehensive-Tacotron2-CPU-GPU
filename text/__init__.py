@@ -1,7 +1,15 @@
 """ from https://github.com/keithito/tacotron """
 import re
+import os
 from text import cleaners
 from text.symbols import symbols, bos, eos
+
+# load phonemizer
+from phonemizer.backend import EspeakBackend
+if os.name == 'nt':
+    from phonemizer.backend.espeak.wrapper import EspeakWrapper
+    _ESPEAK_LIBRARY = 'C:\Program Files\eSpeak NG\libespeak-ng.dll'    # For Windows
+    EspeakWrapper.set_library(_ESPEAK_LIBRARY)
 
 
 # Mappings from symbol to numeric ID and vice versa:
@@ -11,6 +19,37 @@ _id_to_symbol = {i: s for i, s in enumerate(symbols)}
 # Regular expression matching text enclosed in curly braces:
 _curly_re = re.compile(r"(.*?)\{(.+?)\}(.*)")
 
+
+def phoneme_text(text):
+    backend = EspeakBackend(language='en-us', preserve_punctuation=True, with_stress=False, punctuation_marks=';:,.!?¡¿—…"«»“”()', language_switch='remove-flags')
+    text = backend.phonemize([text], strip=True)[0]
+    return text.strip()
+
+
+def phon_to_sequence(text, cleaner_names):
+    """Converts a string of text to a sequence of IDs corresponding to the symbols in the text.
+
+    The text can optionally have ARPAbet sequences enclosed in curly braces embedded
+    in it. For example, "Turn left on {HH AW1 S S T AH0 N} Street."
+
+    Args:
+      text: string to convert to a sequence
+      cleaner_names: names of the cleaner functions to run the text through
+
+    Returns:
+      List of integers corresponding to the symbols in the text
+    """
+    sequence = []
+    
+    print(text)
+
+    # Check for curly braces and treat their contents as ARPAbet:
+    sequence += _symbols_to_sequence(_clean_text(text, cleaner_names))
+
+    # Append eos at the end of the sequence
+    sequence = sequence + [_symbol_to_id[eos]]
+
+    return sequence
 
 def text_to_sequence(text, cleaner_names):
     """Converts a string of text to a sequence of IDs corresponding to the symbols in the text.
@@ -26,17 +65,13 @@ def text_to_sequence(text, cleaner_names):
       List of integers corresponding to the symbols in the text
     """
     sequence = []
+    
+    # phonemize text
+    text = phoneme_text(text)
+    print(text)
 
     # Check for curly braces and treat their contents as ARPAbet:
-    while len(text):
-        m = _curly_re.match(text)
-
-        if not m:
-            sequence += _symbols_to_sequence(_clean_text(text, cleaner_names))
-            break
-        sequence += _symbols_to_sequence(_clean_text(m.group(1), cleaner_names))
-        sequence += _arpabet_to_sequence(m.group(2))
-        text = m.group(3)
+    sequence += _symbols_to_sequence(_clean_text(text, cleaner_names))
 
     # Append eos at the end of the sequence
     sequence = sequence + [_symbol_to_id[eos]]
@@ -75,4 +110,4 @@ def _arpabet_to_sequence(text):
 
 
 def _should_keep_symbol(s):
-    return s in _symbol_to_id and s is not '_' and s is not '~'
+    return s in _symbol_to_id and s != '_' and s != '~'
