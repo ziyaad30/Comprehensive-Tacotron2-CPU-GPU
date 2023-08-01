@@ -166,7 +166,7 @@ class Preprocessor:
     def process_utterance(self, raw_text, wav_path, speaker, basename):
 
         # Preprocess text
-        text = np.array(phon_to_sequence(raw_text, self.cleaners))
+        text = np.array(phon_to_sequence(raw_text))
 
         # Load and process wav files
         wav_raw, wav = self.load_audio(wav_path)
