@@ -26,7 +26,7 @@ def phoneme_text(text):
     return text.strip()
 
 
-def phon_to_sequence(text, cleaner_names):
+def phon_to_sequence(text):
     """Converts a string of text to a sequence of IDs corresponding to the symbols in the text.
 
     The text can optionally have ARPAbet sequences enclosed in curly braces embedded
@@ -41,10 +41,7 @@ def phon_to_sequence(text, cleaner_names):
     """
     sequence = []
     
-    print(text)
-
-    # Check for curly braces and treat their contents as ARPAbet:
-    sequence += _symbols_to_sequence(_clean_text(text, cleaner_names))
+    sequence += _symbols_to_sequence(text)
 
     # Append eos at the end of the sequence
     sequence = sequence + [_symbol_to_id[eos]]
